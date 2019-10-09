@@ -1,0 +1,44 @@
+# HOW TO RUN MONGO ON DOCKER CONTAINER
+
+1. create docker-compose.yml file
+[docker]$ cat msgs-compose.yml 
+version: '3'
+services:
+  msgs-prod:
+    image: mongo:4.0.12
+    container_name: msgs-prod
+    hostname: msgs
+    domainname: docker.lab
+    ports:
+      - "27017:27017"
+    volumes:
+      - $PWD/mongo_data/msgs:/data/db
+    networks:
+      - dbnet
+networks:
+  dbnet:
+
+# docker-compose -f msgs-compose.yml up -d
+# docker exec -it msgs-prod hostname
+
+2. Run the docker container
+[docker]$ docker-compose -f msgs-compose.yml up -d
+
+3. Login to mongo container
+[docker]$ mongo --host 172.19.0.2 --norc
+
+4. Create first Admin User
+> use admin
+switched to db admin
+> load("create_user.js")
+
+[docker]$ cat create_user.js
+// from within mongo shell load("create_user.js")
+db.createUser({user:"amalik",pwd:"XXX",roles:["dbAdminAnyDatabase","clusterAdmin","readWriteAnyDatabase","userAdminAnyDatabase"]})
+
+5. login via new user
+[docker]$ mongo --host 172.19.0.2 -u amalik admin -p
+
+6. Confirm user is authenticated
+> db.runCommand({connectionStatus : 1})
+> db.runCommand({connectionStatus : 1}).authInfo.authenticatedUsers
